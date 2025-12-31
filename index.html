@@ -495,7 +495,7 @@
     <!-- Popup thiệp tỏ tình -->
     <div class="popup-container" id="popupContainer">
         <div class="popup-box">
-            <h2>💌 Thư Tỏ Tình 💌</h2>
+            <h2>💌  Gửi công chúa của anh 💌</h2>
             <div class="decorative-hearts">💕 ✨ 💖 ✨ 💕</div>
             <div class="love-letter">
                 <p>Anh không hứa sẽ cho em tất cả, nhưng sẽ cho em những gì tốt nhất anh có.</p>
@@ -600,6 +600,18 @@
         setTimeout(() => {
             document.getElementById('popupContainer').classList.add('show');
         }, 30000);
+
+        // Đóng popup khi click ra ngoài vùng popup
+        document.getElementById('popupContainer').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+
+        // Ngăn popup đóng khi click vào nội dung bên trong
+        document.querySelector('.popup-box').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
 
         // Tạo thêm chữ rơi liên tục
         const textInterval = setInterval(() => {
