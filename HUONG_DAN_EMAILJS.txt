@@ -1,0 +1,84 @@
+HƯỚNG DẪN CẤU HÌNH EMAILJS ĐỂ NHẬN THÔNG BÁO
+=====================================================
+
+Bước 1: Đăng ký tài khoản EmailJS
+-----------------------------------
+1. Truy cập: https://www.emailjs.com/
+2. Click "Sign Up" để đăng ký tài khoản miễn phí
+3. Xác nhận email đăng ký
+
+Bước 2: Tạo Email Service
+--------------------------
+1. Sau khi đăng nhập, vào "Email Services"
+2. Click "Add New Service"
+3. Chọn Gmail (hoặc email provider bạn muốn dùng)
+4. Đăng nhập Gmail của bạn (ngocquangqq25092003@gmail.com)
+5. Copy "Service ID" (ví dụ: service_abc123)
+
+Bước 3: Tạo Email Template
+---------------------------
+1. Vào "Email Templates"
+2. Click "Create New Template"
+3. Điền nội dung template như sau:
+
+Subject: 
+Thông báo lựa chọn từ trang tỏ tình 💖
+
+Content:
+Chào bạn!
+
+Có người vừa trả lời câu hỏi trên trang web tỏ tình của bạn.
+
+Lựa chọn: {{choice}}
+Thời gian: {{date}}
+
+{{message}}
+
+---
+Tin nhắn tự động từ trang web I Love You
+
+4. Click "Save"
+5. Copy "Template ID" (ví dụ: template_xyz789)
+
+Bước 4: Lấy Public Key
+-----------------------
+1. Vào "Account" -> "General"
+2. Tìm "Public Key" 
+3. Copy Public Key (ví dụ: abcXYZ123456789)
+
+Bước 5: Cập nhật code
+----------------------
+Mở file index.html và thay thế:
+
+1. Dòng 9: 
+   publicKey: "YOUR_PUBLIC_KEY"
+   -> Thay bằng Public Key của bạn
+
+2. Dòng 444 (trong hàm sendEmail):
+   emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+   -> Thay YOUR_SERVICE_ID bằng Service ID
+   -> Thay YOUR_TEMPLATE_ID bằng Template ID
+
+VÍ DỤ SAU KHI THAY:
+-------------------
+Dòng 9:
+    publicKey: "abcXYZ123456789",
+
+Dòng 444:
+    emailjs.send('service_abc123', 'template_xyz789', templateParams)
+
+LƯU Ý:
+------
+- EmailJS miễn phí cho 200 email/tháng
+- Email sẽ được gửi đến: ngocquangqq25092003@gmail.com
+- Kiểm tra cả thư mục Spam nếu không thấy email
+
+KIỂM TRA:
+---------
+1. Mở file index.html trên trình duyệt
+2. Đợi popup hiện ra
+3. Click "Có" hoặc "Không"
+4. Kiểm tra email ngocquangqq25092003@gmail.com
+5. Mở Console (F12) để xem log gửi email thành công hay lỗi
+
+Chúc bạn thành công! 💕
