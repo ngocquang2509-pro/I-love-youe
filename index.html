@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Người Tôi Yêu</title>
+    <style>
+        /* Cấu hình cơ bản cho trang */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000; /* Nền đen */
+            overflow: hidden; /* Ẩn thanh cuộn */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Container chính */
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Phần 1: Sao lung linh nền (Tĩnh & Nhấp nháy) --- */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 2s infinite ease-in-out alternate;
+        }
+
+        @keyframes twinkle {
+            from { opacity: 0.3; box-shadow: 0 0 2px white; }
+            to { opacity: 1; box-shadow: 0 0 5px white, 0 0 10px gold; }
+        }
+
+        /* --- Phần 2: Các lớp rơi (Chữ và hình rơi) --- */
+        .falling-item {
+            position: absolute;
+            top: -10%;
+            color: white;
+            pointer-events: none; /* Không tương tác chuột */
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        /* Định nghĩa 4 lớp chiều sâu (Parallax) */
+        /* Lớp 1: Xa nhất, nhỏ nhất, mờ nhất, chậm nhất */
+        .layer1 {
+            font-size: 10px;
+            opacity: 0.4;
+            filter: blur(1px);
+            z-index: 1;
+        }
+        /* Lớp 2 */
+        .layer2 {
+            font-size: 14px;
+            opacity: 0.6;
+            z-index: 2;
+        }
+        /* Lớp 3 */
+        .layer3 {
+            font-size: 18px;
+            opacity: 0.8;
+            z-index: 3;
+        }
+        /* Lớp 4: Gần nhất, to nhất, rõ nhất, nhanh nhất */
+        .layer4 {
+            font-size: 24px;
+            opacity: 1;
+            font-weight: bold;
+            text-shadow: 0 0 5px #ff69b4; /* Phát sáng nhẹ màu hồng */
+            z-index: 4;
+        }
+
+        /* Hiệu ứng rơi từ trên xuống */
+        @keyframes fall {
+            0% {
+                transform: translateY(0vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0.5;
+            }
+        }
+
+        /* --- Phần 3: Hộp thoại hiển thị 15 câu tỏ tình (Trung tâm) --- */
+        #message-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 10; /* Luôn nổi trên cùng */
+            perspective: 1000px; /* Hiệu ứng 3D */
+        }
+
+        #main-text {
+            color: #fff;
+            font-size: 32px;
+            line-height: 1.6;
+            font-weight: bold;
+            /* Hiệu ứng chữ 3D lung linh */
+            text-shadow: 
+                0 1px 0 #ccc,
+                0 2px 0 #c9c9c9,
+                0 3px 0 #bbb,
+                0 4px 0 #b9b9b9,
+                0 5px 0 #aaa,
+                0 6px 1px rgba(0,0,0,.1),
+                0 0 5px rgba(0,0,0,.1),
+                0 1px 3px rgba(0,0,0,.3),
+                0 3px 5px rgba(0,0,0,.2),
+                0 5px 10px rgba(0,0,0,.25),
+                0 10px 10px rgba(0,0,0,.2),
+                0 20px 20px rgba(0,0,0,.15),
+                0 0 20px #ff69b4,
+                0 0 30px #ff1493,
+                0 0 40px #ff69b4;
+            opacity: 1;
+            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-style: preserve-3d;
+            background: linear-gradient(90deg, #ff6b9d, #ffd93d, #ff6b9d, #c44dff, #ff6b9d);
+            background-size: 400% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px #ff69b4) drop-shadow(0 0 20px #ff1493);
+        }
+
+        /* Hiệu ứng từng chữ cái chạy ra */
+        .char {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(30px) rotateX(-90deg) scale(0.5);
+            animation: charReveal 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        @keyframes charReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) rotateX(-90deg) scale(0.5);
+                filter: blur(10px);
+            }
+            50% {
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* Hiệu ứng chữ bay ra khi ẩn */
+        .char-hide {
+            animation: charHide 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+
+        @keyframes charHide {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg) scale(1);
+                filter: blur(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-40px) rotateX(90deg) scale(0.5);
+                filter: blur(10px);
+            }
+        }
+
+        /* Hiệu ứng glow cho từng chữ khi hiện */
+        .char-glow {
+            animation: charReveal 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+                       charGlowPulse 2s ease-in-out infinite 0.6s;
+        }
+
+        @keyframes charGlowPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 5px #ff69b4);
+            }
+            50% {
+                filter: drop-shadow(0 0 15px #ffd93d) drop-shadow(0 0 25px #ff69b4);
+            }
+        }
+
+        /* Hiệu ứng lung linh gradient chạy */
+        @keyframes textGlow {
+            0% {
+                background-position: 0% 50%;
+                filter: drop-shadow(0 0 10px #ff69b4) drop-shadow(0 0 20px #ff1493) drop-shadow(0 0 30px #ff69b4);
+            }
+            50% {
+                background-position: 100% 50%;
+                filter: drop-shadow(0 0 15px #ffd93d) drop-shadow(0 0 25px #ff6b9d) drop-shadow(0 0 35px #c44dff);
+            }
+            100% {
+                background-position: 200% 50%;
+                filter: drop-shadow(0 0 10px #ff69b4) drop-shadow(0 0 20px #ff1493) drop-shadow(0 0 30px #ff69b4);
+            }
+        }
+
+        /* Hiệu ứng 3D xoay nhẹ */
+        @keyframes text3DFloat {
+            0%, 100% {
+                transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+            }
+            25% {
+                transform: translateY(-5px) rotateX(2deg) rotateY(-2deg);
+            }
+            50% {
+                transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+            }
+            75% {
+                transform: translateY(-5px) rotateX(-2deg) rotateY(2deg);
+            }
+        }
+        
+        /* Class để kích hoạt hiệu ứng hiện chữ */
+        .show-text {
+            opacity: 1 !important;
+        }
+        .hide-text-up {
+            opacity: 0 !important;
+        }
+        .hide-text-down {
+            opacity: 0 !important;
+        }
+
+        /* Container cho text có hiệu ứng float */
+        #main-text.floating {
+            animation: textFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes textFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* --- Phần 4: Hiệu ứng sparkle lung linh --- */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            animation: sparkleAnim 1.5s ease-out forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* --- Phần 5: Hiệu ứng hạt sáng bay xung quanh --- */
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #fff 0%, #ff69b4 50%, transparent 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatParticle 8s ease-in-out infinite;
+        }
+
+        @keyframes floatParticle {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.3;
+            }
+            25% {
+                transform: translateY(-100px) translateX(50px) scale(1.5);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-50px) translateX(-30px) scale(1);
+                opacity: 0.6;
+            }
+            75% {
+                transform: translateY(-150px) translateX(20px) scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        /* --- Phần 6: Vệt sáng chạy ngang màn hình --- */
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #fff, #ff69b4, transparent);
+            border-radius: 50%;
+            animation: shootingStar 3s ease-in-out forwards;
+            filter: blur(1px);
+        }
+
+        @keyframes shootingStar {
+            0% {
+                transform: translateX(-100px) translateY(0) rotate(-45deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(calc(100vw + 100px)) translateY(300px) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        /* --- Nút bật/tắt nhạc --- */
+        #musicToggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ff69b4;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ff69b4;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #musicToggle:hover {
+            background: rgba(255, 105, 180, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #ff69b4;
+        }
+
+        #musicToggle.muted {
+            color: #888;
+            border-color: #888;
+        }
+
+
+    </style>
+</head>
+<body>
+    <!-- Nhạc nền -->
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Nút bật/tắt nhạc -->
+    <button id="musicToggle" onclick="toggleMusic()">🔊</button>
+
+    <div id="container">
+        <div id="stars-container"></div>
+        <div id="falling-container"></div>
+        <div id="particles-container"></div>
+        <div id="sparkles-container"></div>
+        
+        <div id="message-box">
+            <div id="main-text"></div>
+        </div>
+    </div>
+
+    <script>
+        // === 1. Danh sách 15 câu tỏ tình ===
+        const messages = [
+            "Anh đã thích em ngay từ lần đầu gặp mặt.",
+            "Nụ cười của em làm thế giới của anh bừng sáng.",
+            "Ở bên em, anh thấy bình yên đến lạ thường.",
+            "Em là mảnh ghép hoàn hảo nhất mà anh đang tìm kiếm.",
+            "Mỗi ngày không gặp em, anh thấy thời gian trôi thật chậm.",
+            "Anh muốn là người che chở cho em suốt đời này.",
+            "Trong mắt anh, thế giới này không ai xinh đẹp bằng em.",
+            "Chỉ cần em vui, anh sẵn sàng làm mọi thứ.",
+            "Thế giới này rộng lớn, nhưng anh chỉ nhìn thấy mỗi em.",
+            "Anh không hứa sẽ cho em tất cả, nhưng sẽ cho em những gì tốt nhất anh có.",
+            "Trái tim anh đã lỡ nhịp vì em mất rồi.",
+            "Em là điều tuyệt vời nhất từng đến với cuộc đời anh.",
+            "Hãy cho anh cơ hội được chăm sóc em nhé.",
+            "Mọi con đường anh đi, đều muốn dẫn về phía em.",
+            "Anh yêu em! Làm người yêu anh nha?"
+        ];
+
+        // === 2. Hàm tạo sao nền lung linh (Tĩnh) ===
+        function createStars() {
+            const starsContainer = document.getElementById('stars-container');
+            const numStars = 150; // Số lượng sao
+            for (let i = 0; i < numStars; i++) {
+                let star = document.createElement('div');
+                star.className = 'star';
+                // Vị trí ngẫu nhiên
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                // Kích thước ngẫu nhiên
+                let size = Math.random() * 3;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                // Thời gian nhấp nháy ngẫu nhiên để không bị đồng bộ
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // === 3. Hàm tạo các phần tử rơi (Chữ/Tim) theo 4 lớp ===
+        const fallingItems = ['❤', 'Yêu', 'Love', 'Miss U', '💕', '✨'];
+        
+        function createFallingItem() {
+            const fallingContainer = document.getElementById('falling-container');
+            let item = document.createElement('div');
+            item.className = 'falling-item';
+            
+            // Chọn nội dung ngẫu nhiên
+            item.innerText = fallingItems[Math.floor(Math.random() * fallingItems.length)];
+            
+            // Vị trí xuất phát ngang ngẫu nhiên
+            item.style.left = `${Math.random() * 100}vw`;
+
+            // Random lớp (1-4) để tạo chiều sâu
+            let layer = Math.floor(Math.random() * 4) + 1;
+            item.classList.add(`layer${layer}`);
+
+            // Tốc độ rơi dựa trên lớp (Lớp 4 nhanh nhất, Lớp 1 chậm nhất)
+            let duration = (5 - layer) * 3 + Math.random() * 2; // Ví dụ: Lớp 4 khoảng 3-5s, Lớp 1 khoảng 12-14s
+            item.style.animationDuration = `${duration}s`;
+
+            fallingContainer.appendChild(item);
+
+            // Xóa phần tử sau khi rơi xong để tránh tràn bộ nhớ
+            setTimeout(() => {
+                item.remove();
+            }, duration * 1000);
+        }
+
+        // === 4. Hàm hiển thị chữ chạy từ từ ra ===
+        const mainTextElement = document.getElementById('main-text');
+        let currentIndex = 0;
+
+        // Hàm tạo hiệu ứng chữ chạy từ từ
+        function typeText(text, callback, pauseTime = 0) {
+            mainTextElement.innerHTML = '';
+            mainTextElement.classList.remove('floating');
+            
+            // Tách text thành từng ký tự
+            const chars = text.split('');
+            let charIndex = 0;
+            
+            chars.forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char === ' ' ? '\u00A0' : char; // Giữ khoảng trắng
+                span.style.animationDelay = `${index * 0.05}s`; // Delay cho từng chữ
+                mainTextElement.appendChild(span);
+            });
+
+            // Sau khi tất cả chữ hiện xong, thêm hiệu ứng float
+            const totalTime = chars.length * 50 + 600; // Tổng thời gian animation
+            setTimeout(() => {
+                mainTextElement.classList.add('floating');
+                // Đợi thêm pauseTime trước khi gọi callback
+                if (callback) {
+                    setTimeout(callback, pauseTime);
+                }
+            }, totalTime);
+        }
+
+        // Hàm ẩn chữ với hiệu ứng bay đi
+        function hideText(callback) {
+            const chars = mainTextElement.querySelectorAll('.char');
+            mainTextElement.classList.remove('floating');
+            
+            chars.forEach((char, index) => {
+                char.classList.remove('char-glow');
+                char.classList.add('char-hide');
+                char.style.animationDelay = `${index * 0.03}s`;
+            });
+
+            // Callback sau khi ẩn xong
+            const totalTime = chars.length * 30 + 400;
+            setTimeout(() => {
+                if (callback) callback();
+            }, totalTime);
+        }
+
+        function showNextMessage() {
+            // 1. Ẩn câu cũ với hiệu ứng
+            hideText(() => {
+                // 2. Hiện câu mới
+                if (currentIndex < messages.length) {
+                    typeText(messages[currentIndex], () => {
+                        currentIndex++;
+                        // Sau khi hiện xong và đợi 5 giây, chuyển câu tiếp
+                        if (currentIndex <= messages.length) {
+                            showNextMessage();
+                        }
+                    }, 5000); // Đợi 5 giây sau khi hiện xong
+                } else {
+                    // Đã hết 15 câu, hiển thị câu chốt
+                    mainTextElement.style.fontSize = "40px";
+                    typeText("Forever Love ❤️");
+                }
+            });
+        }
+
+        // === KHỞI CHẠY ===
+        // Tạo sao nền
+        createStars();
+        
+        // Tạo hạt sáng bay lơ lửng
+        createFloatingParticles();
+        
+        // Tạo mưa rơi liên tục
+        setInterval(createFallingItem, 300); // Cứ 300ms tạo 1 vật rơi mới
+
+        // Tạo sparkle lung linh xung quanh text
+        setInterval(createSparkle, 200);
+
+        // Tạo sao băng ngẫu nhiên
+        setInterval(createShootingStar, 4000);
+
+        // Bắt đầu hiển thị các câu nói sau 2 giây
+        setTimeout(() => {
+            // Hiển thị câu đầu tiên với hiệu ứng chữ chạy từ từ
+            typeText("Sẵn sàng chưa...", () => {
+                // Bắt đầu hiển thị các câu tỏ tình
+                showNextMessage();
+            }, 2000); // Đợi 2 giây sau câu "Sẵn sàng chưa..."
+        }, 1500);
+
+        // === 5. Hàm tạo hạt sáng bay lơ lửng ===
+        function createFloatingParticles() {
+            const particlesContainer = document.getElementById('particles-container');
+            const numParticles = 30;
+            
+            for (let i = 0; i < numParticles; i++) {
+                let particle = document.createElement('div');
+                particle.className = 'floating-particle';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animationDelay = `${Math.random() * 8}s`;
+                particle.style.animationDuration = `${6 + Math.random() * 4}s`;
+                
+                // Màu sắc ngẫu nhiên
+                const colors = ['#ff69b4', '#ffd93d', '#c44dff', '#ff6b9d', '#fff'];
+                particle.style.background = `radial-gradient(circle, #fff 0%, ${colors[Math.floor(Math.random() * colors.length)]} 50%, transparent 100%)`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // === 6. Hàm tạo sparkle lung linh xung quanh chữ ===
+        function createSparkle() {
+            const sparklesContainer = document.getElementById('sparkles-container');
+            const messageBox = document.getElementById('message-box');
+            const rect = messageBox.getBoundingClientRect();
+            
+            let sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            
+            // Vị trí ngẫu nhiên xung quanh message box
+            const offsetX = (Math.random() - 0.5) * (rect.width + 100);
+            const offsetY = (Math.random() - 0.5) * (rect.height + 100);
+            
+            sparkle.style.left = `${rect.left + rect.width / 2 + offsetX}px`;
+            sparkle.style.top = `${rect.top + rect.height / 2 + offsetY}px`;
+            
+            // Chọn biểu tượng sparkle ngẫu nhiên
+            const sparkleSymbols = ['✨', '💫', '⭐', '🌟', '✦', '✧', '❋', '❊'];
+            sparkle.innerText = sparkleSymbols[Math.floor(Math.random() * sparkleSymbols.length)];
+            sparkle.style.fontSize = `${10 + Math.random() * 20}px`;
+            sparkle.style.color = `hsl(${Math.random() * 60 + 320}, 100%, 70%)`; // Màu hồng/tím
+            
+            sparklesContainer.appendChild(sparkle);
+            
+            // Xóa sau khi animation kết thúc
+            setTimeout(() => {
+                sparkle.remove();
+            }, 1500);
+        }
+
+        // === 7. Hàm tạo sao băng ===
+        function createShootingStar() {
+            const container = document.getElementById('container');
+            let shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            
+            // Vị trí xuất phát ngẫu nhiên ở phía trên bên trái
+            shootingStar.style.left = `${Math.random() * 30}vw`;
+            shootingStar.style.top = `${Math.random() * 30}vh`;
+            shootingStar.style.animationDuration = `${2 + Math.random() * 2}s`;
+            
+            container.appendChild(shootingStar);
+            
+            // Xóa sau khi bay xong
+            setTimeout(() => {
+                shootingStar.remove();
+            }, 4000);
+        }
+
+        // === 8. Hàm điều khiển nhạc ===
+        const bgMusic = document.getElementById('bgMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        let isMusicPlaying = true; // Mặc định là ON
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicToggle.textContent = '🔇';
+                musicToggle.classList.add('muted');
+            } else {
+                bgMusic.play();
+                musicToggle.textContent = '🔊';
+                musicToggle.classList.remove('muted');
+            }
+            isMusicPlaying = !isMusicPlaying;
+        }
+
+        // Tự động phát nhạc khi người dùng tương tác với trang
+        document.addEventListener('click', function startMusic() {
+            if (isMusicPlaying && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log('Autoplay blocked'));
+            }
+            document.removeEventListener('click', startMusic);
+        }, { once: true });
+
+        // Thử phát nhạc ngay khi trang load (có thể bị chặn bởi trình duyệt)
+        window.addEventListener('load', () => {
+            bgMusic.volume = 0.5; // Âm lượng 50%
+            bgMusic.play().catch(e => {
+                // Autoplay bị chặn, nhưng vẫn giữ trạng thái ON
+                // Nhạc sẽ tự động phát khi người dùng click vào trang
+                console.log('Autoplay blocked, waiting for user interaction');
+            });
+        });
+
+    </script>
+</body>
+</html>
