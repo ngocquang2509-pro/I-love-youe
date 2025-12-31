@@ -360,6 +360,35 @@
             border-color: #888;
         }
 
+        /* Chú ý bấm để phát nhạc */
+        #musicHint {
+            position: fixed;
+            bottom: 80px;
+            right: 10px;
+            color: #ff69b4;
+            font-size: 12px;
+            text-align: center;
+            z-index: 100;
+            animation: hintPulse 1.5s ease-in-out infinite;
+            text-shadow: 0 0 5px #ff69b4;
+            pointer-events: none;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% {
+                opacity: 0.7;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-5px);
+            }
+        }
+
+        #musicHint.hidden {
+            display: none;
+        }
+
 
     </style>
 </head>
@@ -370,6 +399,7 @@
     </audio>
 
     <!-- Nút bật/tắt nhạc -->
+    <div id="musicHint">👆 Bấm để phát nhạc</div>
     <button id="musicToggle" onclick="toggleMusic()">🔊</button>
 
     <div id="container">
@@ -621,36 +651,41 @@
         // === 8. Hàm điều khiển nhạc ===
         const bgMusic = document.getElementById('bgMusic');
         const musicToggle = document.getElementById('musicToggle');
-        let isMusicPlaying = true; // Mặc định là ON
+        const musicHint = document.getElementById('musicHint');
 
         function toggleMusic() {
-            if (isMusicPlaying) {
+            // Ẩn chú ý khi đã bấm
+            musicHint.classList.add('hidden');
+            
+            // Kiểm tra trạng thái thực tế của audio
+            if (bgMusic.paused) {
+                // Nhạc đang dừng -> phát nhạc
+                bgMusic.play().then(() => {
+                    musicToggle.textContent = '🔊';
+                    musicToggle.classList.remove('muted');
+                }).catch(e => console.log('Play failed'));
+            } else {
+                // Nhạc đang phát -> dừng nhạc
                 bgMusic.pause();
                 musicToggle.textContent = '🔇';
                 musicToggle.classList.add('muted');
-            } else {
-                bgMusic.play();
-                musicToggle.textContent = '🔊';
-                musicToggle.classList.remove('muted');
             }
-            isMusicPlaying = !isMusicPlaying;
         }
 
-        // Tự động phát nhạc khi người dùng tương tác với trang
-        document.addEventListener('click', function startMusic() {
-            if (isMusicPlaying && bgMusic.paused) {
-                bgMusic.play().catch(e => console.log('Autoplay blocked'));
-            }
-            document.removeEventListener('click', startMusic);
-        }, { once: true });
-
-        // Thử phát nhạc ngay khi trang load (có thể bị chặn bởi trình duyệt)
+        // Thử phát nhạc ngay khi trang load
         window.addEventListener('load', () => {
             bgMusic.volume = 0.5; // Âm lượng 50%
-            bgMusic.play().catch(e => {
-                // Autoplay bị chặn, nhưng vẫn giữ trạng thái ON
-                // Nhạc sẽ tự động phát khi người dùng click vào trang
-                console.log('Autoplay blocked, waiting for user interaction');
+            bgMusic.play().then(() => {
+                // Autoplay thành công, ẩn chú ý
+                musicToggle.textContent = '🔊';
+                musicToggle.classList.remove('muted');
+                musicHint.classList.add('hidden');
+            }).catch(e => {
+                // Autoplay bị chặn, hiển thị icon tắt và chú ý
+                musicToggle.textContent = '🔇';
+                musicToggle.classList.add('muted');
+                musicHint.classList.remove('hidden');
+                console.log('Autoplay blocked, click button to play');
             });
         });
 
