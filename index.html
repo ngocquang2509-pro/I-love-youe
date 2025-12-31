@@ -400,6 +400,13 @@
             #main-text {
                 font-size: 22px;
                 line-height: 1.5;
+                /* Giữ gradient nhưng tăng độ sáng cho tablet */
+                background: linear-gradient(90deg, #ff8fbf, #ffe066, #ff8fbf, #d070ff, #ff8fbf);
+                background-size: 400% 100%;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                filter: drop-shadow(0 0 10px #ff69b4) drop-shadow(0 0 20px #ff1493);
             }
 
             /* Các lớp rơi nhỏ hơn trên mobile */
@@ -458,6 +465,14 @@
             #main-text {
                 font-size: 18px;
                 line-height: 1.4;
+                /* Giữ gradient nhưng tăng độ sáng cho mobile */
+                background: linear-gradient(90deg, #ff8fbf, #ffe066, #ff8fbf, #d070ff, #ff8fbf);
+                background-size: 400% 100%;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                /* Tăng filter drop-shadow để chữ nổi bật hơn */
+                filter: drop-shadow(0 0 8px #ff69b4) drop-shadow(0 0 15px #ff1493) drop-shadow(0 0 25px #ff69b4);
             }
 
             /* Các lớp rơi nhỏ hơn nữa */
@@ -488,14 +503,6 @@
                 bottom: 60px;
                 right: 5px;
                 font-size: 10px;
-            }
-
-            /* Giảm text-shadow cho mobile để tối ưu hiệu năng */
-            #main-text {
-                text-shadow: 
-                    0 0 10px #ff69b4,
-                    0 0 20px #ff1493;
-                filter: drop-shadow(0 0 5px #ff69b4);
             }
         }
 
