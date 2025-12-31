@@ -360,35 +360,6 @@
             border-color: #888;
         }
 
-        /* Chú ý bấm để phát nhạc */
-        #musicHint {
-            position: fixed;
-            bottom: 80px;
-            right: 10px;
-            color: #ff69b4;
-            font-size: 12px;
-            text-align: center;
-            z-index: 100;
-            animation: hintPulse 1.5s ease-in-out infinite;
-            text-shadow: 0 0 5px #ff69b4;
-            pointer-events: none;
-        }
-
-        @keyframes hintPulse {
-            0%, 100% {
-                opacity: 0.7;
-                transform: translateY(0);
-            }
-            50% {
-                opacity: 1;
-                transform: translateY(-5px);
-            }
-        }
-
-        #musicHint.hidden {
-            display: none;
-        }
-
 
     </style>
 </head>
@@ -399,7 +370,6 @@
     </audio>
 
     <!-- Nút bật/tắt nhạc -->
-    <div id="musicHint">👆 Bấm để phát nhạc</div>
     <button id="musicToggle" onclick="toggleMusic()">🔊</button>
 
     <div id="container">
@@ -488,7 +458,7 @@
         let currentIndex = 0;
 
         // Hàm tạo hiệu ứng chữ chạy từ từ
-        function typeText(text, callback, pauseTime = 0) {
+        function typeText(text, callback) {
             mainTextElement.innerHTML = '';
             mainTextElement.classList.remove('floating');
             
@@ -508,10 +478,7 @@
             const totalTime = chars.length * 50 + 600; // Tổng thời gian animation
             setTimeout(() => {
                 mainTextElement.classList.add('floating');
-                // Đợi thêm pauseTime trước khi gọi callback
-                if (callback) {
-                    setTimeout(callback, pauseTime);
-                }
+                if (callback) callback();
             }, totalTime);
         }
 
@@ -538,13 +505,8 @@
             hideText(() => {
                 // 2. Hiện câu mới
                 if (currentIndex < messages.length) {
-                    typeText(messages[currentIndex], () => {
-                        currentIndex++;
-                        // Sau khi hiện xong và đợi 5 giây, chuyển câu tiếp
-                        if (currentIndex <= messages.length) {
-                            showNextMessage();
-                        }
-                    }, 5000); // Đợi 5 giây sau khi hiện xong
+                    typeText(messages[currentIndex]);
+                    currentIndex++;
                 } else {
                     // Đã hết 15 câu, hiển thị câu chốt
                     mainTextElement.style.fontSize = "40px";
@@ -573,9 +535,21 @@
         setTimeout(() => {
             // Hiển thị câu đầu tiên với hiệu ứng chữ chạy từ từ
             typeText("Sẵn sàng chưa...", () => {
-                // Bắt đầu hiển thị các câu tỏ tình
-                showNextMessage();
-            }, 2000); // Đợi 2 giây sau câu "Sẵn sàng chưa..."
+                // Sau 2 giây, bắt đầu chuyển sang các câu tỏ tình
+                setTimeout(() => {
+                    // Cài đặt vòng lặp chuyển câu (cứ 5 giây đổi 1 câu để đủ thời gian xem)
+                    let messageInterval = setInterval(() => {
+                        if (currentIndex <= messages.length) {
+                            showNextMessage();
+                        } else {
+                            clearInterval(messageInterval); // Dừng vòng lặp khi hết câu
+                        }
+                    }, 5000); 
+                    
+                    // Gọi ngay lần đầu
+                    showNextMessage();
+                }, 2000);
+            });
         }, 1500);
 
         // === 5. Hàm tạo hạt sáng bay lơ lửng ===
@@ -651,41 +625,43 @@
         // === 8. Hàm điều khiển nhạc ===
         const bgMusic = document.getElementById('bgMusic');
         const musicToggle = document.getElementById('musicToggle');
-        const musicHint = document.getElementById('musicHint');
+        let isMusicPlaying = false;
 
         function toggleMusic() {
-            // Ẩn chú ý khi đã bấm
-            musicHint.classList.add('hidden');
-            
-            // Kiểm tra trạng thái thực tế của audio
-            if (bgMusic.paused) {
-                // Nhạc đang dừng -> phát nhạc
-                bgMusic.play().then(() => {
-                    musicToggle.textContent = '🔊';
-                    musicToggle.classList.remove('muted');
-                }).catch(e => console.log('Play failed'));
-            } else {
-                // Nhạc đang phát -> dừng nhạc
+            if (isMusicPlaying) {
                 bgMusic.pause();
                 musicToggle.textContent = '🔇';
                 musicToggle.classList.add('muted');
+            } else {
+                bgMusic.play();
+                musicToggle.textContent = '🔊';
+                musicToggle.classList.remove('muted');
             }
+            isMusicPlaying = !isMusicPlaying;
         }
 
-        // Thử phát nhạc ngay khi trang load
+        // Tự động phát nhạc khi người dùng tương tác với trang
+        document.addEventListener('click', function startMusic() {
+            if (!isMusicPlaying) {
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicToggle.textContent = '🔊';
+                    musicToggle.classList.remove('muted');
+                }).catch(e => console.log('Autoplay blocked'));
+            }
+            document.removeEventListener('click', startMusic);
+        }, { once: true });
+
+        // Thử phát nhạc ngay khi trang load (có thể bị chặn bởi trình duyệt)
         window.addEventListener('load', () => {
             bgMusic.volume = 0.5; // Âm lượng 50%
             bgMusic.play().then(() => {
-                // Autoplay thành công, ẩn chú ý
+                isMusicPlaying = true;
                 musicToggle.textContent = '🔊';
-                musicToggle.classList.remove('muted');
-                musicHint.classList.add('hidden');
             }).catch(e => {
-                // Autoplay bị chặn, hiển thị icon tắt và chú ý
+                // Autoplay bị chặn, đợi người dùng click
                 musicToggle.textContent = '🔇';
                 musicToggle.classList.add('muted');
-                musicHint.classList.remove('hidden');
-                console.log('Autoplay blocked, click button to play');
             });
         });
 
